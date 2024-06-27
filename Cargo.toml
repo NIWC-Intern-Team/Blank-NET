@@ -1,0 +1,15 @@
+[package]
+name = "gusvnet"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+crossterm = "0.27.0"
+ratatui = { version = "0.27.0", features = ["all-widgets"]}
+serde = "1.0.203"
+serde_json = "1.0.118"
+
+[dependencies.pyo3]
+version = "0.22.0"
+features = ["auto-initialize"]
