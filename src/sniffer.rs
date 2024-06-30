@@ -14,7 +14,11 @@ pub fn scapy_analyzer_import() -> String {
     include_str!("../network_analyzer.py").into()
 }
 
+pub fn ping_test() {}
+
+// TODO: Need a timeout in the case of no packets. This should be done here or in network_analyzer.py
 pub fn radio_metrics(code: &str) -> Result<(i32, i32, Option<String>, f64, String, Option<f64>)> {
+    // return Ok((0, 0, None, 0.0, "5ghz".into(), None));
     Python::with_gil(
         |py| -> Result<(i32, i32, Option<String>, f64, String, Option<f64>)> {
             let scapy_analyzer =
@@ -22,7 +26,7 @@ pub fn radio_metrics(code: &str) -> Result<(i32, i32, Option<String>, f64, Strin
                     .expect("hmm");
             let function = scapy_analyzer.getattr("radioSniffer").unwrap();
             let res = sniffer(function).unwrap();
-            return Ok(res);
+            Ok(res)
         },
     )
 }

@@ -6,12 +6,12 @@ use ratatui::crossterm::terminal::{
 };
 use ratatui::Terminal;
 use std::error::Error;
-use std::io;
+use std::{io, u32};
 
 mod app;
 mod sniffer;
 mod ui;
-use crate::{app::*, sniffer::*, ui::*};
+use crate::{app::*, ui::*};
 
 fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
@@ -49,6 +49,25 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         }
                         _ => {}
                     },
+                    CurrentScreen::Home => match key.code {
+                        KeyCode::Char('q') => {
+                            app.current_screen = CurrentScreen::Exiting;
+                        }
+                        KeyCode::Up => {
+                            app.options_idx = if app.options_idx == 0 {
+                                (app.options.len() - 1) as u32
+                            } else {
+                                app.options_idx - 1
+                            }
+                        }
+                        KeyCode::Down => {
+                            app.options_idx = (app.options_idx + 1) % app.options.len() as u32;
+                        }
+                        KeyCode::Enter => {
+                            app.current_screen = CurrentScreen::Main;
+                        }
+                        _ => {}
+                    },
                     CurrentScreen::Exiting => match key.code {
                         KeyCode::Char('q') => {
                             return Ok(true);
@@ -57,7 +76,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     },
                 }
             }
-        } else {
+        } else if app.current_screen == CurrentScreen::Main && app.options_idx == 1 {
+            // TODO: I don't like this options index
             if let Ok(metrics) = sniffer::radio_metrics(&app.analyzer_code) {
                 app.metrics = vec![
                     metrics.0.to_string(),

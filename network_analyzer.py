@@ -52,4 +52,4 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog="Interface sniffer")
     parser.add_argument('interface')
     args = parser.parse_args()
-    radioSniffer(args.interface)
+    print(radioSniffer(args.interface))
