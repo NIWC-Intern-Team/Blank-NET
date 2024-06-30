@@ -11,7 +11,7 @@ use std::io;
 mod app;
 mod sniffer;
 mod ui;
-use crate::{app::*, sniffer::*, ui::*};
+use crate::{app::*, ui::*};
 
 fn main() -> Result<(), Box<dyn Error>> {
     enable_raw_mode()?;
@@ -43,7 +43,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     continue;
                 }
                 match app.current_screen {
-                    CurrentScreen::Main => match key.code {
+                    CurrentScreen::Main | CurrentScreen::Home => match key.code {
                         KeyCode::Char('q') => {
                             app.current_screen = CurrentScreen::Exiting;
                         }
@@ -57,20 +57,20 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     },
                 }
             }
-        } else {
+        } else if app.current_screen == CurrentScreen::Main {
             if let Ok(metrics) = sniffer::radio_metrics(&app.analyzer_code) {
-                app.metrics = vec![
-                    metrics.0.to_string(),
-                    metrics.1.to_string(),
-                    metrics.2.unwrap_or("N/A".to_string()),
-                    metrics.3.to_string(),
-                    metrics.4,
-                    match metrics.5 {
-                        None => "N/A".to_string(),
-                        Some(a) => a.to_string(),
-                    },
-                ];
-            }
+            app.metrics = vec![
+                metrics.0.to_string(),
+                metrics.1.to_string(),
+                metrics.2.unwrap_or("N/A".to_string()),
+                metrics.3.to_string(),
+                metrics.4,
+                match metrics.5 {
+                    None => "N/A".to_string(),
+                    Some(a) => a.to_string(),
+                },
+            ];
         }
+    }
     }
 }

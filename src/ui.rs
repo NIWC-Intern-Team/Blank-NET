@@ -7,7 +7,7 @@ use ratatui::{
     Frame,
 };
 
-fn metric_ui(frame: &mut Frame, grid: Vec<Vec<Rect>>, app: &App) {
+fn metric_block_ui(frame: &mut Frame, grid: Vec<Vec<Rect>>, app: &App) {
     let block_style = Style::default().fg(Color::Green);
 
     let metric_contents = [
@@ -46,20 +46,11 @@ fn metric_ui(frame: &mut Frame, grid: Vec<Vec<Rect>>, app: &App) {
     }
 }
 
-pub fn ui(f: &mut Frame, app: &App) {
-    let chunks = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(3),
-            Constraint::Min(1),
-            Constraint::Length(3),
-        ])
-        .split(f.size());
-
+fn metric_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &App) {
     let outer_metric_chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(chunks[1]);
+        .split(constraint[1]);
 
     let inner_metric_chunks_top = Layout::default()
         .direction(Direction::Horizontal)
@@ -79,6 +70,67 @@ pub fn ui(f: &mut Frame, app: &App) {
         ])
         .split(outer_metric_chunks[1]);
 
+        metric_block_ui(
+            frame,
+            vec![
+                inner_metric_chunks_top.to_vec(),
+                inner_metric_chunks_bottom.to_vec(),
+            ],
+            app,
+        );
+
+}
+
+
+fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app:&App) {
+    let block_style = Style::default().fg(Color::White);
+
+    let options = [
+        "Connection test",
+        "GUSV network metrics",
+        "Something else",
+    ];
+    let option_chunks = Layout::default().direction(Direction::Vertical).constraints(
+        vec![
+            Constraint::Ratio(1, options.len() as u32),
+            Constraint::Ratio(1, options.len() as u32),
+            Constraint::Ratio(1, options.len() as u32),
+            ]
+    ).split(constraints[1]);
+
+    for (idx, i) in options.iter().enumerate() {
+    let option_block = Block::default()
+        .borders(Borders::ALL)
+        .style(Style::default());
+
+    let option = Paragraph::new(Text::styled(*i, block_style)).block(option_block)
+    .alignment(Alignment::Left);
+    frame.render_widget(option, option_chunks[idx]);
+
+    }
+
+}
+
+
+pub fn ui(f: &mut Frame, app: &App) {
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Length(3),
+            Constraint::Min(1),
+            Constraint::Length(3),
+        ])
+        .split(f.size());
+
+    match app.current_screen {
+        CurrentScreen::Main => {
+            metric_ui(f, chunks.to_vec(), app)
+        },
+        CurrentScreen::Home => {
+            home_ui(f, chunks.to_vec(), app)
+        }
+        _ => {}
+    }
     let title_block = Block::default()
         .borders(Borders::ALL)
         .style(Style::default());
@@ -87,7 +139,7 @@ pub fn ui(f: &mut Frame, app: &App) {
         .block(title_block);
 
     let current_navigation_text = match app.current_screen {
-        CurrentScreen::Main => {
+        CurrentScreen::Main | CurrentScreen::Home => {
             vec![
                 Span::styled("q - quit", Style::default().fg(Color::LightYellow)),
                 // TODO:  Add in once navigation is handled
@@ -98,6 +150,7 @@ pub fn ui(f: &mut Frame, app: &App) {
                 // ),
             ]
         }
+
         CurrentScreen::Exiting => vec![Span::styled(
             "press q again to exit",
             Style::default().fg(Color::LightRed),
@@ -106,14 +159,12 @@ pub fn ui(f: &mut Frame, app: &App) {
 
     let navigation_footer = Paragraph::new(Line::from(current_navigation_text))
         .block(Block::default().borders(Borders::ALL));
+
+    // -- All rendering should happen below! --
     f.render_widget(title, chunks[0]);
+    match app.current_screen {
+        CurrentScreen::Home => {}
+        _ => {}
+    }
     f.render_widget(navigation_footer, chunks[2]);
-    metric_ui(
-        f,
-        vec![
-            inner_metric_chunks_top.to_vec(),
-            inner_metric_chunks_bottom.to_vec(),
-        ],
-        app,
-    )
 }

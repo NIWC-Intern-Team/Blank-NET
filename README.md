@@ -7,7 +7,7 @@ A CLI tool for the GUSV to display and record network metrics. GUSV-NET assists 
 
 | Name | Status |
 | -- | -- |
-| Signal metric display | ❌ |
+| Signal metric display | ✅ |
 |  Save to PCAP file | ❌ |
 | View network debug and control message | ❌ |
 | Perform global network operations | ❌ |
