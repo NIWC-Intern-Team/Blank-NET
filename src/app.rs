@@ -12,8 +12,7 @@ pub struct App {
     pub metrics: Vec<String>,
     pub analyzer_code: String,
     pub options_idx: u32,
-    pub options: [String; 3]
-
+    pub options: [String; 3],
 }
 
 impl App {
@@ -24,10 +23,11 @@ impl App {
             metrics: (0..6).map(|_| String::new()).collect(),
             analyzer_code: scapy_analyzer_import(),
             options_idx: 0,
-            options:
-        ["Connection test".into(),
-        "GUSV network metrics".into(),
-        "Something else".into()]
+            options: [
+                "Connection test".into(),
+                "GUSV network metrics".into(),
+                "Something else".into(),
+            ],
         }
     }
 }

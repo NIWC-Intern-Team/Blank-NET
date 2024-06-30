@@ -46,24 +46,28 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     CurrentScreen::Main => match key.code {
                         KeyCode::Char('q') => {
                             app.current_screen = CurrentScreen::Exiting;
-                        },
+                        }
                         _ => {}
                     },
                     CurrentScreen::Home => match key.code {
                         KeyCode::Char('q') => {
                             app.current_screen = CurrentScreen::Exiting;
-                        },
+                        }
                         KeyCode::Up => {
-                            app.options_idx = if app.options_idx == 0 {(app.options.len() - 1) as u32} else {app.options_idx - 1}
-                        },
+                            app.options_idx = if app.options_idx == 0 {
+                                (app.options.len() - 1) as u32
+                            } else {
+                                app.options_idx - 1
+                            }
+                        }
                         KeyCode::Down => {
-                            app.options_idx = (app.options_idx + 1) % app.options.len() as u32; 
-                        },
+                            app.options_idx = (app.options_idx + 1) % app.options.len() as u32;
+                        }
                         KeyCode::Enter => {
                             app.current_screen = CurrentScreen::Main;
                         }
                         _ => {}
-                    }
+                    },
                     CurrentScreen::Exiting => match key.code {
                         KeyCode::Char('q') => {
                             return Ok(true);
@@ -72,20 +76,21 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     },
                 }
             }
-        } else if app.current_screen == CurrentScreen::Main && app.options_idx == 1 { // TODO: I don't like this options index
+        } else if app.current_screen == CurrentScreen::Main && app.options_idx == 1 {
+            // TODO: I don't like this options index
             if let Ok(metrics) = sniffer::radio_metrics(&app.analyzer_code) {
-            app.metrics = vec![
-                metrics.0.to_string(),
-                metrics.1.to_string(),
-                metrics.2.unwrap_or("N/A".to_string()),
-                metrics.3.to_string(),
-                metrics.4,
-                match metrics.5 {
-                    None => "N/A".to_string(),
-                    Some(a) => a.to_string(),
-                },
-            ];
+                app.metrics = vec![
+                    metrics.0.to_string(),
+                    metrics.1.to_string(),
+                    metrics.2.unwrap_or("N/A".to_string()),
+                    metrics.3.to_string(),
+                    metrics.4,
+                    match metrics.5 {
+                        None => "N/A".to_string(),
+                        Some(a) => a.to_string(),
+                    },
+                ];
+            }
         }
-    }
     }
 }

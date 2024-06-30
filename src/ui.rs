@@ -1,6 +1,10 @@
 use crate::app::*;
 use ratatui::{
-    layout::{Alignment, Constraint, Direction, Layout, Rect}, style::{Color, Style}, symbols::block, text::{Line, Span, Text}, widgets::{Block, Borders, Paragraph}, Frame
+    layout::{Alignment, Constraint, Direction, Layout, Rect},
+    style::{Color, Style},
+    text::{Line, Span, Text},
+    widgets::{Block, Borders, Paragraph},
+    Frame,
 };
 
 fn metric_block_ui(frame: &mut Frame, grid: Vec<Vec<Rect>>, app: &App) {
@@ -66,48 +70,49 @@ fn metric_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &App) {
         ])
         .split(outer_metric_chunks[1]);
 
-        metric_block_ui(
-            frame,
-            vec![
-                inner_metric_chunks_top.to_vec(),
-                inner_metric_chunks_bottom.to_vec(),
-            ],
-            app,
-        );
-
+    metric_block_ui(
+        frame,
+        vec![
+            inner_metric_chunks_top.to_vec(),
+            inner_metric_chunks_bottom.to_vec(),
+        ],
+        app,
+    );
 }
 
-
-fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app:&App) {
+fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
     let block_style = Style::default().fg(Color::White);
 
-    let option_chunks = Layout::default().direction(Direction::Vertical).constraints(
-        vec![
+    let option_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(vec![
             Constraint::Ratio(1, app.options.len() as u32),
             Constraint::Ratio(1, app.options.len() as u32),
             Constraint::Ratio(1, app.options.len() as u32),
-            ]
-    ).split(constraints[1]);
+        ])
+        .split(constraints[1]);
 
     for (idx, i) in app.options.iter().enumerate() {
-    let option_block = Block::default()
-        .borders(Borders::ALL)
-        .style(Style::default());
-    let option;
-    if idx as u32 == app.options_idx {
-        option = Paragraph::new(Text::styled(i, block_style)).block(Block::default().borders(Borders::ALL)
-    .style(Style::default().bg(Color::White).fg(Color::Black)))
-        .alignment(Alignment::Left);
-    } else {
-        option = Paragraph::new(Text::styled(i, block_style)).block(option_block)
-        .alignment(Alignment::Left);
+        let option_block = Block::default()
+            .borders(Borders::ALL)
+            .style(Style::default());
+        let option;
+        if idx as u32 == app.options_idx {
+            option = Paragraph::new(Text::styled(i, block_style))
+                .block(
+                    Block::default()
+                        .borders(Borders::ALL)
+                        .style(Style::default().bg(Color::White).fg(Color::Black)),
+                )
+                .alignment(Alignment::Left);
+        } else {
+            option = Paragraph::new(Text::styled(i, block_style))
+                .block(option_block)
+                .alignment(Alignment::Left);
+        }
+        frame.render_widget(option, option_chunks[idx]);
     }
-    frame.render_widget(option, option_chunks[idx]);
-
-    }
-
 }
-
 
 pub fn ui(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
@@ -123,15 +128,11 @@ pub fn ui(f: &mut Frame, app: &App) {
         CurrentScreen::Main => {
             // TODO: Can we have scroll over enum? Would be more idiomatic?
             match app.options_idx {
-                1 => {
-                    metric_ui(f, chunks.to_vec(), app)
-                }
+                1 => metric_ui(f, chunks.to_vec(), app),
                 _ => {}
             }
-        },
-        CurrentScreen::Home => {
-            home_ui(f, chunks.to_vec(), app)
         }
+        CurrentScreen::Home => home_ui(f, chunks.to_vec(), app),
         _ => {}
     }
     let title_block = Block::default()
