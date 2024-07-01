@@ -82,6 +82,7 @@ fn metric_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &App) {
 
 fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
     let block_style = Style::default().fg(Color::White);
+    let selected_block_style = Style::default().fg(Color::Black);
 
     let option_chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -98,7 +99,7 @@ fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
             .style(Style::default());
         let option;
         if idx as u32 == app.options_idx {
-            option = Paragraph::new(Text::styled(i, block_style))
+            option = Paragraph::new(Text::styled(i, selected_block_style))
                 .block(
                     Block::default()
                         .borders(Borders::ALL)
