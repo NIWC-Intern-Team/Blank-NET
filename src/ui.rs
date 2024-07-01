@@ -32,7 +32,7 @@ fn metric_block_ui(frame: &mut Frame, grid: Vec<Vec<Rect>>, app: &App) {
             .constraints(
                 [
                     Constraint::Percentage(50),
-                    Constraint::Length(5),
+                    Constraint::Length(1),
                     Constraint::Percentage(50),
                 ]
                 .as_ref(),
@@ -80,31 +80,51 @@ fn metric_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &App) {
     );
 }
 
-fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
+fn select_ui(
+    frame: &mut Frame,
+    constraint: Vec<Rect>,
+    app: &App,
+    options: Vec<String>,
+    options_idx: u32,
+    have_border: bool,
+) {
     let block_style = Style::default().fg(Color::White);
-    let selected_block_style = Style::default().fg(Color::Black);
-
+    let option_len = options.len() as u32;
+    let constraints: Vec<Constraint> = options.iter().map(|_| Constraint::Fill(1)).collect();
     let option_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Ratio(1, app.options.len() as u32),
-            Constraint::Ratio(1, app.options.len() as u32),
-            Constraint::Ratio(1, app.options.len() as u32),
-        ])
-        .split(constraints[1]);
+        .constraints(
+            // vec![
+            // Constraint::Fill(4),
+            // Constraint::Fill(4),
+            // Constraint::Fill(4),
+            // Constraint::Fill(4),
+            // ]
+            constraints,
+        )
+        .split(constraint[1]);
 
-    for (idx, i) in app.options.iter().enumerate() {
-        let option_block = Block::default()
-            .borders(Borders::ALL)
-            .style(Style::default());
+    for (idx, i) in options.iter().enumerate() {
+        // if idx == 3 {
+        //     break
+        // }
+        let option_block = if !have_border {
+            Block::default().style(Style::default())
+        } else {
+            Block::default()
+                .borders(Borders::ALL)
+                .style(Style::default())
+        };
         let option;
-        if idx as u32 == app.options_idx {
-            option = Paragraph::new(Text::styled(i, selected_block_style))
-                .block(
+        if idx as u32 == options_idx {
+            option = Paragraph::new(Text::styled(i, block_style))
+                .block(if !have_border {
+                    Block::default().style(Style::default().bg(Color::White).fg(Color::Black))
+                } else {
                     Block::default()
                         .borders(Borders::ALL)
-                        .style(Style::default().bg(Color::White).fg(Color::Black)),
-                )
+                        .style(Style::default().bg(Color::White).fg(Color::Black))
+                })
                 .alignment(Alignment::Left);
         } else {
             option = Paragraph::new(Text::styled(i, block_style))
@@ -113,6 +133,17 @@ fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
         }
         frame.render_widget(option, option_chunks[idx]);
     }
+}
+
+fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
+    select_ui(
+        frame,
+        constraints,
+        app,
+        app.options.to_vec(),
+        app.options_idx,
+        true,
+    )
 }
 
 pub fn ui(f: &mut Frame, app: &App) {
@@ -125,6 +156,11 @@ pub fn ui(f: &mut Frame, app: &App) {
         ])
         .split(f.size());
 
+    // let split_screen = Layout::default().direction(Direction::Horizontal).constraints(vec![
+    //     Constraint::Percentage(50),
+    //     Constraint::Percentage(50),
+    // ]
+    // ).split(chunks[1]);
     match app.current_screen {
         CurrentScreen::Main => {
             // TODO: Can we have scroll over enum? Would be more idiomatic?
@@ -133,6 +169,20 @@ pub fn ui(f: &mut Frame, app: &App) {
                 _ => {}
             }
         }
+        CurrentScreen::Interface => {
+            // home_ui(f, chunks.to_vec(), app);
+            // let options = app.interfaces.clone();
+            let new_if_list = app.interfaces.clone();
+            select_ui(
+                f,
+                chunks.to_vec(),
+                app,
+                new_if_list,
+                app.if_options_idx,
+                false,
+            );
+        }
+        // CurrentScreen::Interface => select_ui(f, chunks.to_vec(), app, ["hello".to_string(), "there".to_string(), "World!".to_string()].to_vec(), app.if_options_idx),
         CurrentScreen::Home => home_ui(f, chunks.to_vec(), app),
         _ => {}
     }
@@ -144,7 +194,11 @@ pub fn ui(f: &mut Frame, app: &App) {
         .block(title_block);
 
     let current_navigation_text = match app.current_screen {
-        CurrentScreen::Main | CurrentScreen::Home => {
+        CurrentScreen::Exiting => vec![Span::styled(
+            "press q again to exit",
+            Style::default().fg(Color::LightRed),
+        )],
+        _ => {
             vec![
                 Span::styled("q - quit", Style::default().fg(Color::LightYellow)),
                 // TODO:  Add in once navigation is handled
@@ -155,11 +209,6 @@ pub fn ui(f: &mut Frame, app: &App) {
                 // ),
             ]
         }
-
-        CurrentScreen::Exiting => vec![Span::styled(
-            "press q again to exit",
-            Style::default().fg(Color::LightRed),
-        )],
     };
 
     let navigation_footer = Paragraph::new(Line::from(current_navigation_text))

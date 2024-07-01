@@ -9,7 +9,8 @@ import json
 
 
 
-result = ''
+radiotap_result = ''
+packet_result = ''
 
 '''
 @return:
@@ -34,6 +35,7 @@ def signalMetrics(radiotap):
 def processRadioTap(packet):
 
     # 802.11 packet
+    # print(packet.summary())
     if packet.haslayer(RadioTap):
         radiotap = packet.getlayer(RadioTap)
         signalMetrics(radiotap)
@@ -42,7 +44,7 @@ def processRadioTap(packet):
 
 
 def radioSniffer(interface):
-    sniff(iface=interface, prn=lambda packet: processRadioTap(packet), store = 0, count = 1)
+    sniff(iface=interface, prn=lambda packet: processRadioTap(packet), store = 0, count = 1, timeout = 0.5)
     return json.dumps(result)
 
 if __name__ == '__main__':
@@ -52,4 +54,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog="Interface sniffer")
     parser.add_argument('interface')
     args = parser.parse_args()
-    print(radioSniffer(args.interface))
+    while True:
+        print(radioSniffer(args.interface))
+
+
+
