@@ -146,6 +146,24 @@ fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
     )
 }
 
+fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &App, ip_group: &Vec<String>) {
+    let block_style = Style::default().fg(Color::White);
+    let constraints: Vec<Constraint> = ip_group.iter().map(|_| Constraint::Fill(1)).collect();
+    let option_chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(constraints)
+        .split(constraint[1]);
+
+    for (idx, i) in ip_group.iter().enumerate() {
+        let option_block = Block::default().style(Style::default());
+        let option;
+        option = Paragraph::new(Text::styled(i, block_style))
+            .block(option_block)
+            .alignment(Alignment::Left);
+        frame.render_widget(option, option_chunks[idx]);
+    }
+}
+
 pub fn ui(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -165,6 +183,7 @@ pub fn ui(f: &mut Frame, app: &App) {
         CurrentScreen::Main => {
             // TODO: Can we have scroll over enum? Would be more idiomatic?
             match app.options_idx {
+                0 => connection_ui(f, chunks.to_vec(), app, &app.ip_group),
                 1 => metric_ui(f, chunks.to_vec(), app),
                 _ => {}
             }
@@ -198,6 +217,22 @@ pub fn ui(f: &mut Frame, app: &App) {
             "press q again to exit",
             Style::default().fg(Color::LightRed),
         )],
+        CurrentScreen::Main => {
+            if app.options_idx == 0 {
+                vec![
+                    Span::styled("q - quit", Style::default().fg(Color::LightYellow)),
+                    Span::styled(
+                        "s - start ping test",
+                        Style::default().fg(Color::LightYellow),
+                    ),
+                ]
+            } else {
+                vec![Span::styled(
+                    "q - quit",
+                    Style::default().fg(Color::LightYellow),
+                )]
+            }
+        }
         _ => {
             vec![
                 Span::styled("q - quit", Style::default().fg(Color::LightYellow)),

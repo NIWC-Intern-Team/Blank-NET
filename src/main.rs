@@ -5,6 +5,7 @@ use ratatui::crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
 use ratatui::Terminal;
+use sniffer::ping;
 use std::error::Error;
 use std::{io, u32};
 
@@ -15,12 +16,8 @@ use crate::{app::*, ui::*};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut app = App::new();
-    // println!("{:?}", list_interfaces());
-    // println!("{:?}", app.interfaces);
+    // ping("wlp0s20f3".to_string());
     // return Ok(());
-    // loop {
-    //     radio_metrics(&app.analyzer_code);
-    // }
     enable_raw_mode()?;
     let mut stderr = io::stderr();
     execute!(stderr, EnterAlternateScreen, EnableMouseCapture)?;

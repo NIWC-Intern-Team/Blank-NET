@@ -1,6 +1,14 @@
-use pcap::Device;
+use pnet::datalink::{self, NetworkInterface};
+use pnet::packet::icmp::echo_request::MutableEchoRequestPacket;
+use pnet::packet::icmp::IcmpTypes;
+use pnet::packet::ip::IpNextHeaderProtocols;
+use pnet::packet::{ipv4, Packet};
+use pnet::transport::TransportChannelType::Layer4;
+use pnet::transport::{icmp_packet_iter, transport_channel};
 use pyo3::prelude::*;
 use std::io::{Error, ErrorKind};
+use std::net::{IpAddr, Ipv4Addr};
+use std::time::Duration;
 
 fn sniffer(
     function: Bound<PyAny>,
@@ -16,7 +24,49 @@ pub fn scapy_analyzer_import() -> String {
     include_str!("../network_analyzer.py").into()
 }
 
-pub fn ping_test() {}
+pub fn ping(ip: Ipv4Addr) -> bool {
+    let protocol = Layer4(pnet::transport::TransportProtocol::Ipv4(
+        IpNextHeaderProtocols::Icmp,
+    ));
+    println!("hello");
+    let (mut tx, mut rx) =
+        transport_channel(1024, protocol).expect("Error creating transport channel");
+
+    // building ping packet
+    let mut packet = [0u8; 16];
+    let mut icmp_packet =
+        MutableEchoRequestPacket::new(&mut packet).expect("Error creating echo packet");
+    icmp_packet.set_icmp_type(IcmpTypes::EchoRequest);
+    icmp_packet.set_sequence_number(1);
+    icmp_packet.set_identifier(1);
+
+    let checksum = pnet::util::checksum(icmp_packet.packet(), 1);
+    icmp_packet.set_checksum(checksum);
+
+    // tx.send_to(, dst)
+    for _ in 0..5 {
+        tx.send_to(&icmp_packet, IpAddr::V4(ip))
+            .expect("Error sending packet");
+
+        let mut iter = icmp_packet_iter(&mut rx);
+        match iter.next_with_timeout(Duration::from_millis(1000)) {
+            Ok(Some((_packet, addr))) => {
+                if addr == std::net::IpAddr::V4(ip) {
+                    return true;
+                }
+            }
+            Ok(None) => {}
+            Err(e) => {
+                panic!("error: {}", e);
+            }
+        }
+    }
+    return false;
+}
+
+pub fn ping_connection(nodes: Vec<Ipv4Addr>) -> Vec<bool> {
+    nodes.iter().map(|ip| ping(*ip)).collect()
+}
 
 // TODO: Need a timeout in the case of no packets. This should be done here or in network_analyzer.py
 pub fn radio_metrics(
@@ -42,9 +92,9 @@ pub fn radio_metrics(
 }
 
 pub fn list_interfaces() -> Vec<String> {
-    Device::list()
-        .unwrap()
+    // grab interface names
+    datalink::interfaces()
         .iter()
-        .map(|dev| dev.name.clone())
+        .map(|ni| ni.name.clone())
         .collect()
 }
