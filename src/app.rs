@@ -1,5 +1,3 @@
-use std::net::Ipv4Addr;
-
 use crate::sniffer::*;
 
 #[derive(PartialEq)]
@@ -26,7 +24,7 @@ pub struct App {
     pub if_options_idx: u32,
     pub interfaces: Vec<String>,
     pub ip_group: Vec<[String; 2]>,
-    pub ping_status: PingStatus
+    pub ping_status: PingStatus,
 }
 
 impl App {

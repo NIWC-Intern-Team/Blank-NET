@@ -1,4 +1,3 @@
-use pnet::packet::ipv4::Ipv4;
 use ratatui::backend::{Backend, CrosstermBackend};
 use ratatui::crossterm::event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode};
 use ratatui::crossterm::execute;
@@ -8,8 +7,7 @@ use ratatui::crossterm::terminal::{
 use ratatui::Terminal;
 use sniffer::{ping, ping_connection};
 use std::error::Error;
-use std::net::Ipv4Addr;
-use std::{io, u32};
+use std::io;
 
 mod app;
 mod sniffer;
@@ -57,12 +55,16 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         KeyCode::Enter => {
                             if app.options_idx == 0 {
                                 app.ping_status = PingStatus::Running(0);
-                                app.ip_group = app.ip_group.iter().map(|pair| [pair[0].clone(), "*".to_string()]).collect();
+                                app.ip_group = app
+                                    .ip_group
+                                    .iter()
+                                    .map(|pair| [pair[0].clone(), "*".to_string()])
+                                    .collect();
                                 //TODO: Make this better, requires restructuring types.
                                 // let connection_status = ping_connection(
                                 //     app.ip_group.iter().map(|a| a[0].parse().unwrap()).collect(),
                                 // );
-                                
+
                                 // app.ip_group = app
                                 //     .ip_group
                                 //     .iter()
@@ -88,7 +90,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         }
                         KeyCode::Enter => {
                             app.current_screen = CurrentScreen::Main;
-                            app.interface = app.interfaces[app.if_options_idx as usize].clone();
+                            app.interface
+                                .clone_from(&app.interfaces[app.if_options_idx as usize]);
                         }
                         KeyCode::Up => {
                             app.if_options_idx = if app.if_options_idx == 0 {
@@ -151,24 +154,26 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 ];
             }
         } else if app.current_screen == CurrentScreen::Main && app.ping_status != PingStatus::Halt {
-                            if let PingStatus::Running(idx) = app.ping_status {
-                                if idx == app.ip_group.len() as u32 {
-                                    app.ping_status = PingStatus::Halt
-                                } else {
-                                    // TODO: This is crap, fix clones
-                                    // perform ping at idx
-                                    app.ip_group[idx as usize] = 
-                                        [app.ip_group[idx as usize][0].clone(), if ping(app.ip_group[idx as usize][0].parse().unwrap()) {
-                                            "connected".to_string()
-                                        } else {
-                                            "disconnected".to_string()
-                                        }];
-                                    ["".to_string(), "".to_string()];
-                                    
-                                    app.ping_status = PingStatus::Running(idx + 1)
-                                }
-                            }
+            if let PingStatus::Running(idx) = app.ping_status {
+                if idx == app.ip_group.len() as u32 {
+                    app.ping_status = PingStatus::Halt
+                } else {
+                    // TODO: This is crap, fix clones
+                    // perform ping at idx
+                    app.ip_group[idx as usize] = [
+                        app.ip_group[idx as usize][0].clone(),
+                        if ping(app.ip_group[idx as usize][0].parse().unwrap()) {
+                            "connected".to_string()
+                        } else {
+                            "disconnected".to_string()
+                        },
+                    ];
+                    "".to_string();
+                    "".to_string();
 
+                    app.ping_status = PingStatus::Running(idx + 1)
+                }
+            }
         }
     }
 }

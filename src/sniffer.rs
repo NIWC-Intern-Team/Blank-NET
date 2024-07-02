@@ -2,7 +2,7 @@ use pnet::datalink::{self};
 use pnet::packet::icmp::echo_request::MutableEchoRequestPacket;
 use pnet::packet::icmp::IcmpTypes;
 use pnet::packet::ip::IpNextHeaderProtocols;
-use pnet::packet::{Packet};
+use pnet::packet::Packet;
 use pnet::transport::TransportChannelType::Layer4;
 use pnet::transport::{icmp_packet_iter, transport_channel};
 use pyo3::prelude::*;
@@ -10,6 +10,7 @@ use std::io::{Error, ErrorKind};
 use std::net::{IpAddr, Ipv4Addr};
 use std::time::Duration;
 
+// TODO create struct for serde deserial instead of manually typed
 fn sniffer(
     function: Bound<PyAny>,
     interface: &String,

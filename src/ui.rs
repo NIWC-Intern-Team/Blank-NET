@@ -89,7 +89,6 @@ fn select_ui(
     have_border: bool,
 ) {
     let block_style = Style::default().fg(Color::White);
-    let option_len = options.len() as u32;
     let constraints: Vec<Constraint> = options.iter().map(|_| Constraint::Fill(1)).collect();
     let option_chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -115,9 +114,8 @@ fn select_ui(
                 .borders(Borders::ALL)
                 .style(Style::default())
         };
-        let option;
-        if idx as u32 == options_idx {
-            option = Paragraph::new(Text::styled(i, block_style))
+        let option = if idx as u32 == options_idx {
+            Paragraph::new(Text::styled(i, block_style))
                 .block(if !have_border {
                     Block::default().style(Style::default().bg(Color::White).fg(Color::Black))
                 } else {
@@ -125,12 +123,12 @@ fn select_ui(
                         .borders(Borders::ALL)
                         .style(Style::default().bg(Color::White).fg(Color::Black))
                 })
-                .alignment(Alignment::Left);
+                .alignment(Alignment::Left)
         } else {
-            option = Paragraph::new(Text::styled(i, block_style))
+            Paragraph::new(Text::styled(i, block_style))
                 .block(option_block)
-                .alignment(Alignment::Left);
-        }
+                .alignment(Alignment::Left)
+        };
         frame.render_widget(option, option_chunks[idx]);
     }
 }
@@ -146,7 +144,7 @@ fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
     )
 }
 
-fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &App, ip_group: &Vec<[String; 2]>) {
+fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, _app: &App, ip_group: &[[String; 2]]) {
     let block_style = Style::default().fg(Color::White);
     let split_screen = Layout::default()
         .direction(Direction::Horizontal)
@@ -161,7 +159,7 @@ fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &App, ip_group: 
 
         for (idx, pair) in ip_group.iter().enumerate() {
             let option_block = Block::default().style(Style::default());
-            
+
             if pair[i] == "*" {
                 let simple = throbber_widgets_tui::Throbber::default(); //.throbber_set(throbber_widgets_tui::ASCII);
                 frame.render_widget(simple, option_chunks[idx]);
@@ -263,9 +261,5 @@ pub fn ui(f: &mut Frame, app: &App) {
 
     // -- All rendering should happen below! --
     f.render_widget(title, chunks[0]);
-    match app.current_screen {
-        CurrentScreen::Home => {}
-        _ => {}
-    }
     f.render_widget(navigation_footer, chunks[2]);
 }
