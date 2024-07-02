@@ -1,8 +1,8 @@
-use pnet::datalink::{self, NetworkInterface};
+use pnet::datalink::{self};
 use pnet::packet::icmp::echo_request::MutableEchoRequestPacket;
 use pnet::packet::icmp::IcmpTypes;
 use pnet::packet::ip::IpNextHeaderProtocols;
-use pnet::packet::{ipv4, Packet};
+use pnet::packet::{Packet};
 use pnet::transport::TransportChannelType::Layer4;
 use pnet::transport::{icmp_packet_iter, transport_channel};
 use pyo3::prelude::*;
@@ -28,7 +28,6 @@ pub fn ping(ip: Ipv4Addr) -> bool {
     let protocol = Layer4(pnet::transport::TransportProtocol::Ipv4(
         IpNextHeaderProtocols::Icmp,
     ));
-    println!("hello");
     let (mut tx, mut rx) =
         transport_channel(1024, protocol).expect("Error creating transport channel");
 
@@ -43,13 +42,13 @@ pub fn ping(ip: Ipv4Addr) -> bool {
     let checksum = pnet::util::checksum(icmp_packet.packet(), 1);
     icmp_packet.set_checksum(checksum);
 
-    // tx.send_to(, dst)
+    // try to ping 5 times before giving up
     for _ in 0..5 {
         tx.send_to(&icmp_packet, IpAddr::V4(ip))
             .expect("Error sending packet");
 
         let mut iter = icmp_packet_iter(&mut rx);
-        match iter.next_with_timeout(Duration::from_millis(1000)) {
+        match iter.next_with_timeout(Duration::from_millis(100)) {
             Ok(Some((_packet, addr))) => {
                 if addr == std::net::IpAddr::V4(ip) {
                     return true;
@@ -61,7 +60,7 @@ pub fn ping(ip: Ipv4Addr) -> bool {
             }
         }
     }
-    return false;
+    false
 }
 
 pub fn ping_connection(nodes: Vec<Ipv4Addr>) -> Vec<bool> {

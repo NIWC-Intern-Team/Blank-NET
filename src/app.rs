@@ -10,6 +10,12 @@ pub enum CurrentScreen {
     Exiting,
 }
 
+#[derive(PartialEq)]
+pub enum PingStatus {
+    Halt,
+    Running(u32),
+}
+
 pub struct App {
     pub current_screen: CurrentScreen,
     pub metrics: Vec<String>,
@@ -19,7 +25,8 @@ pub struct App {
     pub interface: String,
     pub if_options_idx: u32,
     pub interfaces: Vec<String>,
-    pub ip_group: Vec<String>,
+    pub ip_group: Vec<[String; 2]>,
+    pub ping_status: PingStatus
 }
 
 impl App {
@@ -37,21 +44,22 @@ impl App {
                 "Something else".into(),
             ],
             ip_group: vec![
-                "192.168.1.201",
-                "192.168.1.202",
-                "192.168.1.200",
-                "192.168.1.110",
-                "192.168.1.112",
-                "192.168.1.113",
-                "192.168.1.114",
-                "192.168.1.115",
-                "129.168.1.116",
+                ["192.168.1.201", "_"],
+                ["192.168.1.202", "_"],
+                ["192.168.1.200", "_"],
+                ["192.168.1.110", "_"],
+                ["192.168.1.112", "_"],
+                ["192.168.1.113", "_"],
+                ["192.168.1.114", "_"],
+                ["192.168.1.115", "_"],
+                ["129.168.1.116", "_"],
             ]
             .iter()
-            .map(|s| s.to_string())
+            .map(|s| [s[0].to_string(), s[1].to_string()])
             .collect(),
             interfaces: list_interfaces(),
             interface: String::new(),
+            ping_status: PingStatus::Halt,
         }
     }
 }
