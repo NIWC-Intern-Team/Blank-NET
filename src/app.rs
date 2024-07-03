@@ -1,8 +1,11 @@
-use crate::sniffer::*;
+use ratatui::widgets::ListState;
+
+use crate::{sniffer::*, NodeTable};
 
 #[derive(PartialEq)]
 pub enum CurrentScreen {
     Interface,
+    NodeView,
     Home,
     Main,
     Exiting,
@@ -14,6 +17,26 @@ pub enum PingStatus {
     Running(u32),
 }
 
+#[derive(Debug)]
+pub struct IpConnection {
+    pub ip: String,
+    pub conn_status: String,
+}
+
+impl IpConnection {
+    fn new(ip: &str, conn_status: &str) -> Self {
+        Self {
+            ip: ip.to_string(),
+            conn_status: conn_status.to_string(),
+        }
+    }
+}
+
+pub struct IpList {
+    pub items: Vec<IpConnection>,
+    pub state: ListState,
+}
+
 pub struct App {
     pub current_screen: CurrentScreen,
     pub metrics: Vec<String>,
@@ -23,8 +46,21 @@ pub struct App {
     pub interface: String,
     pub if_options_idx: u32,
     pub interfaces: Vec<String>,
-    pub ip_group: Vec<[String; 2]>,
+    pub ip_list: IpList,
     pub ping_status: PingStatus,
+    pub node_table: NodeTable,
+}
+
+impl FromIterator<(&'static str, &'static str)> for IpList {
+    fn from_iter<T: IntoIterator<Item = (&'static str, &'static str)>>(iter: T) -> Self {
+        let items = iter
+            .into_iter()
+            .map(|(ip, conn_status)| IpConnection::new(ip, conn_status))
+            .collect();
+        // let state = ScrollViewState::default();
+        let state = ListState::default();
+        Self { items, state }
+    }
 }
 
 impl App {
@@ -41,20 +77,18 @@ impl App {
                 "GUSV network metrics".into(),
                 "Something else".into(),
             ],
-            ip_group: vec![
-                ["192.168.1.201", "_"],
-                ["192.168.1.202", "_"],
-                ["192.168.1.200", "_"],
-                ["192.168.1.110", "_"],
-                ["192.168.1.112", "_"],
-                ["192.168.1.113", "_"],
-                ["192.168.1.114", "_"],
-                ["192.168.1.115", "_"],
-                ["129.168.1.116", "_"],
-            ]
-            .iter()
-            .map(|s| [s[0].to_string(), s[1].to_string()])
-            .collect(),
+            node_table: NodeTable::default(),
+            ip_list: IpList::from_iter([
+                ("192.168.1.201", "_"),
+                ("192.168.1.202", "_"),
+                ("192.168.1.200", "_"),
+                ("192.168.1.110", "_"),
+                ("192.168.1.112", "_"),
+                ("192.168.1.113", "_"),
+                ("192.168.1.114", "_"),
+                ("192.168.1.115", "_"),
+                ("129.168.1.116", "_"),
+            ]),
             interfaces: list_interfaces(),
             interface: String::new(),
             ping_status: PingStatus::Halt,

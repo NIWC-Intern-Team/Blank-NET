@@ -1,11 +1,13 @@
 use crate::app::*;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Style},
+    style::{Color, Style, Stylize},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, Paragraph},
+    widgets::{Block, Borders, ListItem, Paragraph, StatefulWidget},
     Frame,
 };
+
+const SELECTED_STYLE: Style = Style::new().bg(Color::White).fg(Color::Black);
 
 fn metric_block_ui(frame: &mut Frame, grid: Vec<Vec<Rect>>, app: &App) {
     let block_style = Style::default().fg(Color::Green);
@@ -144,36 +146,20 @@ fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
     )
 }
 
-fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, _app: &App, ip_group: &[[String; 2]]) {
-    let block_style = Style::default().fg(Color::White);
-    let split_screen = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(constraint[1]);
-    for i in 0..2 {
-        let constraints: Vec<Constraint> = ip_group.iter().map(|_| Constraint::Fill(1)).collect();
-        let option_chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(constraints)
-            .split(split_screen[i]);
+fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &mut App) {
+    let option_block = Block::default().style(Style::default());
 
-        for (idx, pair) in ip_group.iter().enumerate() {
-            let option_block = Block::default().style(Style::default());
+    let list_items: Vec<ListItem> = app
+        .ip_list
+        .items
+        .iter()
+        .map(|ip_connection| ListItem::new(ip_connection.ip.clone()).bg(Color::Black))
+        .collect();
 
-            if pair[i] == "*" {
-                let simple = throbber_widgets_tui::Throbber::default(); //.throbber_set(throbber_widgets_tui::ASCII);
-                frame.render_widget(simple, option_chunks[idx]);
-            } else {
-                let option = Paragraph::new(Text::styled(pair[i].clone(), block_style))
-                    .block(option_block)
-                    .alignment(Alignment::Left);
-                frame.render_widget(option, option_chunks[idx]);
-            }
-        }
-    }
+    app.node_table.render(constraint[1], frame);
 }
 
-pub fn ui(f: &mut Frame, app: &App) {
+pub fn ui(f: &mut Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
@@ -183,16 +169,13 @@ pub fn ui(f: &mut Frame, app: &App) {
         ])
         .split(f.size());
 
-    // let split_screen = Layout::default().direction(Direction::Horizontal).constraints(vec![
-    //     Constraint::Percentage(50),
-    //     Constraint::Percentage(50),
-    // ]
-    // ).split(chunks[1]);
     match app.current_screen {
+        CurrentScreen::NodeView => {
+            connection_ui(f, chunks.to_vec(), app);
+        }
         CurrentScreen::Main => {
             // TODO: Can we have scroll over enum? Would be more idiomatic?
             match app.options_idx {
-                0 => connection_ui(f, chunks.to_vec(), app, &app.ip_group),
                 1 => metric_ui(f, chunks.to_vec(), app),
                 _ => {}
             }
@@ -222,38 +205,30 @@ pub fn ui(f: &mut Frame, app: &App) {
     let title = Paragraph::new(Text::styled("GUSV-NET", Style::default().fg(Color::Green)))
         .block(title_block);
 
-    let current_navigation_text = match app.current_screen {
-        CurrentScreen::Exiting => vec![Span::styled(
+    let mut current_navigation_text = if app.current_screen == CurrentScreen::Exiting {
+        vec![Span::styled(
             "press q again to exit",
             Style::default().fg(Color::LightRed),
-        )],
-        CurrentScreen::Main => {
-            if app.options_idx == 0 {
-                vec![
-                    Span::styled("q - quit", Style::default().fg(Color::LightYellow)),
-                    Span::styled(
-                        "s - start ping test",
-                        Style::default().fg(Color::LightYellow),
-                    ),
-                ]
-            } else {
-                vec![Span::styled(
-                    "q - quit",
-                    Style::default().fg(Color::LightYellow),
-                )]
-            }
-        }
-        _ => {
-            vec![
-                Span::styled("q - quit", Style::default().fg(Color::LightYellow)),
-                // TODO:  Add in once navigation is handled
-                //
-                // Span::styled(
-                //     " navigation - arrow keys",
-                //     Style::default().fg(Color::LightYellow),
-                // ),
-            ]
-        }
+        )]
+    } else {
+        vec![Span::styled(
+            "q - quit",
+            Style::default().fg(Color::LightYellow),
+        )]
+    };
+
+    match app.current_screen {
+        CurrentScreen::NodeView => current_navigation_text.append(&mut vec![
+            Span::styled(
+                "p - start ping test",
+                Style::default().fg(Color::LightYellow),
+            ),
+            Span::styled(
+                "enter - to edit node",
+                Style::default().fg(Color::LightYellow),
+            ),
+        ]),
+        _ => {}
     };
 
     let navigation_footer = Paragraph::new(Line::from(current_navigation_text))
