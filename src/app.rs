@@ -3,9 +3,15 @@ use ratatui::widgets::ListState;
 use crate::{sniffer::*, NodeTable};
 
 #[derive(PartialEq)]
+pub enum Mode {
+    Normal,
+    Editing,
+}
+
+#[derive(PartialEq)]
 pub enum CurrentScreen {
     Interface,
-    NodeView,
+    NodeView(Mode),
     Home,
     Main,
     Exiting,
@@ -46,9 +52,9 @@ pub struct App {
     pub interface: String,
     pub if_options_idx: u32,
     pub interfaces: Vec<String>,
-    pub ip_list: IpList,
     pub ping_status: PingStatus,
     pub node_table: NodeTable,
+    pub ip_input: String,
 }
 
 impl FromIterator<(&'static str, &'static str)> for IpList {
@@ -57,7 +63,6 @@ impl FromIterator<(&'static str, &'static str)> for IpList {
             .into_iter()
             .map(|(ip, conn_status)| IpConnection::new(ip, conn_status))
             .collect();
-        // let state = ScrollViewState::default();
         let state = ListState::default();
         Self { items, state }
     }
@@ -66,7 +71,6 @@ impl FromIterator<(&'static str, &'static str)> for IpList {
 impl App {
     pub fn new() -> App {
         App {
-            // current_screen: CurrentScreen::Main,
             current_screen: CurrentScreen::Home,
             metrics: (0..6).map(|_| String::new()).collect(),
             analyzer_code: scapy_analyzer_import(),
@@ -78,20 +82,10 @@ impl App {
                 "Something else".into(),
             ],
             node_table: NodeTable::default(),
-            ip_list: IpList::from_iter([
-                ("192.168.1.201", "_"),
-                ("192.168.1.202", "_"),
-                ("192.168.1.200", "_"),
-                ("192.168.1.110", "_"),
-                ("192.168.1.112", "_"),
-                ("192.168.1.113", "_"),
-                ("192.168.1.114", "_"),
-                ("192.168.1.115", "_"),
-                ("129.168.1.116", "_"),
-            ]),
             interfaces: list_interfaces(),
             interface: String::new(),
             ping_status: PingStatus::Halt,
+            ip_input: String::from(""),
         }
     }
 }

@@ -1,9 +1,9 @@
 use crate::app::*;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Style, Stylize},
+    style::{Color, Style},
     text::{Line, Span, Text},
-    widgets::{Block, Borders, ListItem, Paragraph, StatefulWidget},
+    widgets::{Block, Borders, Paragraph},
     Frame,
 };
 
@@ -94,21 +94,10 @@ fn select_ui(
     let constraints: Vec<Constraint> = options.iter().map(|_| Constraint::Fill(1)).collect();
     let option_chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(
-            // vec![
-            // Constraint::Fill(4),
-            // Constraint::Fill(4),
-            // Constraint::Fill(4),
-            // Constraint::Fill(4),
-            // ]
-            constraints,
-        )
+        .constraints(constraints)
         .split(constraint[1]);
 
     for (idx, i) in options.iter().enumerate() {
-        // if idx == 3 {
-        //     break
-        // }
         let option_block = if !have_border {
             Block::default().style(Style::default())
         } else {
@@ -147,16 +136,20 @@ fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
 }
 
 fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &mut App) {
-    let option_block = Block::default().style(Style::default());
+    if app.current_screen == CurrentScreen::NodeView(Mode::Editing) {
+        let chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Fill(1), Constraint::Length(5)])
+            .split(constraint[1]);
 
-    let list_items: Vec<ListItem> = app
-        .ip_list
-        .items
-        .iter()
-        .map(|ip_connection| ListItem::new(ip_connection.ip.clone()).bg(Color::Black))
-        .collect();
+        app.node_table.render(chunks[0], frame);
 
-    app.node_table.render(constraint[1], frame);
+        let block = Block::default().title("New IP:").borders(Borders::ALL);
+        let text = Paragraph::new(app.ip_input.clone()).block(block);
+        frame.render_widget(text, chunks[1]);
+    } else {
+        app.node_table.render(constraint[1], frame);
+    }
 }
 
 pub fn ui(f: &mut Frame, app: &mut App) {
@@ -170,19 +163,12 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .split(f.size());
 
     match app.current_screen {
-        CurrentScreen::NodeView => {
-            connection_ui(f, chunks.to_vec(), app);
-        }
-        CurrentScreen::Main => {
-            // TODO: Can we have scroll over enum? Would be more idiomatic?
-            match app.options_idx {
-                1 => metric_ui(f, chunks.to_vec(), app),
-                _ => {}
-            }
-        }
+        CurrentScreen::NodeView(_) => connection_ui(f, chunks.to_vec(), app),
+        CurrentScreen::Main => match app.options_idx {
+            1 => metric_ui(f, chunks.to_vec(), app),
+            _ => {}
+        },
         CurrentScreen::Interface => {
-            // home_ui(f, chunks.to_vec(), app);
-            // let options = app.interfaces.clone();
             let new_if_list = app.interfaces.clone();
             select_ui(
                 f,
@@ -193,7 +179,6 @@ pub fn ui(f: &mut Frame, app: &mut App) {
                 false,
             );
         }
-        // CurrentScreen::Interface => select_ui(f, chunks.to_vec(), app, ["hello".to_string(), "there".to_string(), "World!".to_string()].to_vec(), app.if_options_idx),
         CurrentScreen::Home => home_ui(f, chunks.to_vec(), app),
         _ => {}
     }
@@ -217,8 +202,9 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         )]
     };
 
+    // TODO: match for other screen types
     match app.current_screen {
-        CurrentScreen::NodeView => current_navigation_text.append(&mut vec![
+        CurrentScreen::NodeView(_) => current_navigation_text.append(&mut vec![
             Span::styled(
                 "p - start ping test",
                 Style::default().fg(Color::LightYellow),

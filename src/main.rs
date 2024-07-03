@@ -18,8 +18,6 @@ use crate::{app::*, nodetable::*, ui::*};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let mut app = App::new();
-    // ping("wlp0s20f3".to_string());
-    // return Ok(());
     enable_raw_mode()?;
     let mut stderr = io::stderr();
     execute!(stderr, EnterAlternateScreen, EnableMouseCapture)?;
@@ -48,7 +46,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     continue;
                 }
                 match app.current_screen {
-                    CurrentScreen::NodeView => match key.code {
+                    CurrentScreen::NodeView(_) => match key.code {
                         KeyCode::Char('q') => {
                             app.current_screen = CurrentScreen::Home;
                             app.ping_status = PingStatus::Halt;
@@ -58,12 +56,23 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                             app.ping_status = PingStatus::Running(0);
                         }
                         KeyCode::Down => {
-                            app.node_table.next();
+                            if app.current_screen == CurrentScreen::NodeView(Mode::Normal) {
+                                app.node_table.next();
+                            }
                         }
                         KeyCode::Up => {
-                            app.node_table.previous();
+                            if app.current_screen == CurrentScreen::NodeView(Mode::Normal) {
+                                app.node_table.previous();
+                            }
                         }
-                        KeyCode::Enter => {}
+                        KeyCode::Enter => {
+                            app.current_screen =
+                                if app.current_screen == CurrentScreen::NodeView(Mode::Editing) {
+                                    CurrentScreen::NodeView(Mode::Normal)
+                                } else {
+                                    CurrentScreen::NodeView(Mode::Editing)
+                                }
+                        }
                         _ => {}
                     },
                     CurrentScreen::Main => match key.code {
@@ -117,7 +126,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         }
                         KeyCode::Enter => {
                             if app.options_idx == 0 {
-                                app.current_screen = CurrentScreen::NodeView;
+                                app.current_screen = CurrentScreen::NodeView(Mode::Normal);
                             } else if app.options_idx == 1 {
                                 app.current_screen = CurrentScreen::Interface;
                             } else {
@@ -136,7 +145,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
             }
         } else {
             match app.current_screen {
-                CurrentScreen::NodeView => {
+                CurrentScreen::NodeView(_) => {
                     if let PingStatus::Running(idx) = app.ping_status {
                         if idx == app.node_table.nodes.len() as u32 {
                             app.ping_status = PingStatus::Halt

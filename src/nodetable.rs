@@ -147,6 +147,7 @@ impl NodeTable {
             // .footer(Row::new(vec!["Updated on Dec 28"])) TODO(Feature): Correct data of edit
             .highlight_style(Style::new().reversed())
             .highlight_symbol(">>");
+
         scrollview::render(
             area.inner(Margin {
                 vertical: 1,
