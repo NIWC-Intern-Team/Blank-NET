@@ -81,7 +81,7 @@ impl NodeTable {
         let i = match self.state.selected() {
             Some(i) => {
                 if i >= self.nodes.len() - 1 {
-                    0
+                    i
                 } else {
                     i + 1
                 }
@@ -96,7 +96,7 @@ impl NodeTable {
         let i = match self.state.selected() {
             Some(i) => {
                 if i == 0 {
-                    self.nodes.len() - 1
+                    0
                 } else {
                     i - 1
                 }
@@ -105,6 +105,14 @@ impl NodeTable {
         };
         self.state.select(Some(i));
         self.scroll_state = self.scroll_state.position(i * ITEM_HEIGHT);
+    }
+
+    pub fn update_ip(&mut self, ip: String) {
+        self.nodes[self.state.selected().unwrap()].ip = ip;
+    }
+
+    pub fn get_selected_ip(&mut self) -> String {
+        self.nodes[self.state.selected().unwrap()].ip.clone()
     }
 
     pub fn update_conn_status(&mut self, idx: usize, status: String) {

@@ -5,9 +5,13 @@ use ratatui::crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen,
 };
 use ratatui::Terminal;
+use serde_json::json;
 use sniffer::ping;
 use std::error::Error;
-use std::io;
+use std::fs;
+use std::io::{self, Read, Write};
+use std::net::Ipv4Addr;
+use std::path::PathBuf;
 
 mod app;
 mod nodetable;
@@ -16,8 +20,62 @@ mod sniffer;
 mod ui;
 use crate::{app::*, nodetable::*, ui::*};
 
+use clap::Parser;
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    #[arg(short, long, default_value = "./gusvnet.yaml")]
+    config_file: PathBuf,
+}
+
+fn config_import(filepath: &PathBuf) -> (usize, String) {
+    let mut file = if let Ok(tmp_file) = fs::File::create_new(filepath) {
+        tmp_file
+    } else {
+        fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(filepath)
+            .expect("Cannot open file")
+    };
+    let mut buf = String::new();
+    let size = file.read_to_string(&mut buf).expect("Failed to read file");
+    (size, buf)
+}
+
+fn save_config(app: &mut App) {
+    let mut file = fs::File::create(&app.filepath).unwrap();
+    let list: Vec<String> = app
+        .node_table
+        .nodes
+        .iter()
+        .map(|node| node.ip.clone())
+        .collect();
+    let json_str = json!(list).to_string();
+    file.write(json_str.as_bytes()).unwrap();
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
+    let args = Args::parse();
     let mut app = App::new();
+
+    app.filepath = args.config_file;
+    let (size, buf) = config_import(&app.filepath);
+    if size != 0 {
+        println!("{}", buf);
+        let ip_list: Vec<String> = serde_json::from_str(&buf).unwrap();
+        for ip in &ip_list {
+            if ip.parse::<Ipv4Addr>().is_err() {
+                panic!("Format error: Expected array of IPV4 Addresses");
+            }
+        }
+        app.node_table = ip_list
+            .iter()
+            .map(|ip| (ip.clone(), "-".to_string()))
+            .collect();
+    }
+
     enable_raw_mode()?;
     let mut stderr = io::stderr();
     execute!(stderr, EnterAlternateScreen, EnableMouseCapture)?;
@@ -46,6 +104,26 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     continue;
                 }
                 match app.current_screen {
+                    CurrentScreen::NodeView(Mode::Editing) => match key.code {
+                        // TODO: Allow user to exit if they don't want to write a new IP
+                        KeyCode::Enter => {
+                            if app.ip_input.parse::<Ipv4Addr>().is_ok() {
+                                app.node_table.update_ip(app.ip_input.clone());
+                                save_config(app);
+                                app.current_screen = CurrentScreen::NodeView(Mode::Normal)
+                            } else if app.ip_input.is_empty() {
+                                app.current_screen = CurrentScreen::NodeView(Mode::Normal)
+                            }
+                        }
+
+                        KeyCode::Backspace => {
+                            app.ip_input.pop();
+                        }
+                        KeyCode::Char(val) => {
+                            app.ip_input.push(val);
+                        }
+                        _ => {}
+                    },
                     CurrentScreen::NodeView(_) => match key.code {
                         KeyCode::Char('q') => {
                             app.current_screen = CurrentScreen::Home;
@@ -70,6 +148,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                                 if app.current_screen == CurrentScreen::NodeView(Mode::Editing) {
                                     CurrentScreen::NodeView(Mode::Normal)
                                 } else {
+                                    app.ip_input = app.node_table.get_selected_ip();
                                     CurrentScreen::NodeView(Mode::Editing)
                                 }
                         }

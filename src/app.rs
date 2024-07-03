@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use ratatui::widgets::ListState;
 
 use crate::{sniffer::*, NodeTable};
@@ -55,6 +57,7 @@ pub struct App {
     pub ping_status: PingStatus,
     pub node_table: NodeTable,
     pub ip_input: String,
+    pub filepath: PathBuf,
 }
 
 impl FromIterator<(&'static str, &'static str)> for IpList {
@@ -86,6 +89,7 @@ impl App {
             interface: String::new(),
             ping_status: PingStatus::Halt,
             ip_input: String::from(""),
+            filepath: PathBuf::new(),
         }
     }
 }

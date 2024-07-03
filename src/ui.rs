@@ -179,8 +179,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
                 false,
             );
         }
-        CurrentScreen::Home => home_ui(f, chunks.to_vec(), app),
-        _ => {}
+        CurrentScreen::Home | CurrentScreen::Exiting => home_ui(f, chunks.to_vec(), app),
     }
 
     let title_block = Block::default()
@@ -192,12 +191,12 @@ pub fn ui(f: &mut Frame, app: &mut App) {
 
     let mut current_navigation_text = if app.current_screen == CurrentScreen::Exiting {
         vec![Span::styled(
-            "press q again to exit",
+            "[press q again to exit]  ",
             Style::default().fg(Color::LightRed),
         )]
     } else {
         vec![Span::styled(
-            "q - quit",
+            "[q - quit]  ",
             Style::default().fg(Color::LightYellow),
         )]
     };
@@ -206,11 +205,11 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     match app.current_screen {
         CurrentScreen::NodeView(_) => current_navigation_text.append(&mut vec![
             Span::styled(
-                "p - start ping test",
+                "[p - start ping test]  ",
                 Style::default().fg(Color::LightYellow),
             ),
             Span::styled(
-                "enter - to edit node",
+                "[enter - to edit node]  ",
                 Style::default().fg(Color::LightYellow),
             ),
         ]),
