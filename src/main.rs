@@ -53,7 +53,7 @@ fn save_config(app: &mut App) {
         .map(|node| node.ip.clone())
         .collect();
     let json_str = json!(list).to_string();
-    file.write(json_str.as_bytes()).unwrap();
+    file.write_all(json_str.as_bytes()).unwrap();
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -105,14 +105,17 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 }
                 match app.current_screen {
                     CurrentScreen::NodeView(Mode::Editing) => match key.code {
-                        // TODO: Allow user to exit if they don't want to write a new IP
                         KeyCode::Enter => {
                             if app.ip_input.parse::<Ipv4Addr>().is_ok() {
                                 app.node_table.update_ip(app.ip_input.clone());
                                 save_config(app);
+                                app.ip_input_status = IpInputStatus::Normal;
                                 app.current_screen = CurrentScreen::NodeView(Mode::Normal)
                             } else if app.ip_input.is_empty() {
+                                app.ip_input_status = IpInputStatus::Normal;
                                 app.current_screen = CurrentScreen::NodeView(Mode::Normal)
+                            } else {
+                                app.ip_input_status = IpInputStatus::Error;
                             }
                         }
 

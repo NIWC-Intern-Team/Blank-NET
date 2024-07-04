@@ -45,6 +45,12 @@ pub struct IpList {
     pub state: ListState,
 }
 
+#[derive(PartialEq)]
+pub enum IpInputStatus {
+    Normal,
+    Error,
+}
+
 pub struct App {
     pub current_screen: CurrentScreen,
     pub metrics: Vec<String>,
@@ -56,6 +62,7 @@ pub struct App {
     pub interfaces: Vec<String>,
     pub ping_status: PingStatus,
     pub node_table: NodeTable,
+    pub ip_input_status: IpInputStatus,
     pub ip_input: String,
     pub filepath: PathBuf,
 }
@@ -89,6 +96,7 @@ impl App {
             interface: String::new(),
             ping_status: PingStatus::Halt,
             ip_input: String::from(""),
+            ip_input_status: IpInputStatus::Normal,
             filepath: PathBuf::new(),
         }
     }

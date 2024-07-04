@@ -1,7 +1,8 @@
 use crate::app::*;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{Color, Style},
+    style::{Color, Style, Stylize},
+    symbols::border,
     text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph},
     Frame,
@@ -144,8 +145,20 @@ fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &mut App) {
 
         app.node_table.render(chunks[0], frame);
 
-        let block = Block::default().title("New IP:").borders(Borders::ALL);
-        let text = Paragraph::new(app.ip_input.clone()).block(block);
+        let border_color = if app.ip_input_status == IpInputStatus::Error {
+            Color::Red
+        } else {
+            Color::White
+        };
+        let block = Block::default()
+            .title("New IP:")
+            .borders(Borders::ALL)
+            .fg(border_color);
+
+        // .border_style(block_border_style);
+        let text = Paragraph::new(app.ip_input.clone())
+            .block(block)
+            .fg(Color::White);
         frame.render_widget(text, chunks[1]);
     } else {
         app.node_table.render(constraint[1], frame);
