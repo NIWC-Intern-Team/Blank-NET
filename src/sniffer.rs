@@ -68,7 +68,6 @@ pub fn ping_connection(nodes: Vec<Ipv4Addr>) -> Vec<bool> {
     nodes.iter().map(|ip| ping(*ip)).collect()
 }
 
-// TODO: Need a timeout in the case of no packets. This should be done here or in network_analyzer.py
 pub fn radio_metrics(
     code: &str,
     interface: &String,

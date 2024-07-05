@@ -12,7 +12,7 @@ pub enum Mode {
 
 #[derive(PartialEq)]
 pub enum CurrentScreen {
-    Interface,
+    InterfaceView,
     NodeView(Mode),
     Home,
     Main,

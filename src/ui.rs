@@ -200,8 +200,9 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .borders(Borders::ALL)
         .style(Style::default());
 
-    let title: Paragraph = Paragraph::new(Text::styled("GUSV-NET", Style::default().fg(Color::Green)))
-        .block(title_block);
+    let title: Paragraph =
+        Paragraph::new(Text::styled("GUSV-NET", Style::default().fg(Color::Green)))
+            .block(title_block);
 
     let mut current_navigation_text = if app.current_screen == CurrentScreen::Exiting {
         vec![Span::styled(
