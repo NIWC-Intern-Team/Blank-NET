@@ -92,6 +92,7 @@ fn select_ui(
     have_border: bool,
 ) {
     let block_style = Style::default().fg(Color::White);
+    let select_style = Style::default().fg(Color::Black);
     let constraints: Vec<Constraint> = options.iter().map(|_| Constraint::Fill(1)).collect();
     let option_chunks = Layout::default()
         .direction(Direction::Vertical)
@@ -107,7 +108,7 @@ fn select_ui(
                 .style(Style::default())
         };
         let option = if idx as u32 == options_idx {
-            Paragraph::new(Text::styled(i, block_style))
+            Paragraph::new(Text::styled(i, select_style))
                 .block(if !have_border {
                     Block::default().style(Style::default().bg(Color::White).fg(Color::Black))
                 } else {
@@ -181,7 +182,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             1 => metric_ui(f, chunks.to_vec(), app),
             _ => {}
         },
-        CurrentScreen::Interface => {
+        CurrentScreen::InterfaceView => {
             let new_if_list = app.interfaces.clone();
             select_ui(
                 f,
@@ -199,7 +200,7 @@ pub fn ui(f: &mut Frame, app: &mut App) {
         .borders(Borders::ALL)
         .style(Style::default());
 
-    let title = Paragraph::new(Text::styled("GUSV-NET", Style::default().fg(Color::Green)))
+    let title: Paragraph = Paragraph::new(Text::styled("GUSV-NET", Style::default().fg(Color::Green)))
         .block(title_block);
 
     let mut current_navigation_text = if app.current_screen == CurrentScreen::Exiting {
