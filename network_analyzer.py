@@ -7,10 +7,7 @@ import logging
 import argparse
 import json
 
-
-
-radiotap_result = ''
-packet_result = ''
+result = ''
 
 '''
 @return:
@@ -35,12 +32,9 @@ def signalMetrics(radiotap):
 def processRadioTap(packet):
 
     # 802.11 packet
-    # print(packet.summary())
     if packet.haslayer(RadioTap):
         radiotap = packet.getlayer(RadioTap)
         signalMetrics(radiotap)
-    #else:
-    #    print(packet.summary())
 
 
 def radioSniffer(interface):
@@ -50,7 +44,6 @@ def radioSniffer(interface):
 if __name__ == '__main__':
 
     # logging.getLogger("scapy").setLevel(logging.CRITICAL)
-
     parser = argparse.ArgumentParser(prog="Interface sniffer")
     parser.add_argument('interface')
     args = parser.parse_args()
