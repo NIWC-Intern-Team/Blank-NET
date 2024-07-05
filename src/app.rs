@@ -10,6 +10,7 @@ pub enum Mode {
     Editing,
 }
 
+
 #[derive(PartialEq)]
 pub enum CurrentScreen {
     InterfaceView,

@@ -232,8 +232,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         if idx == app.node_table.nodes.len() as u32 {
                             app.ping_status = PingStatus::Halt
                         } else {
-                            // TODO: This is crap, fix clones
-                            // perform ping at idx
                             app.node_table.update_conn_status(
                                 idx as usize,
                                 if ping(app.node_table.nodes[idx as usize].ip.parse().unwrap()) {
@@ -248,8 +246,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     }
                 }
                 CurrentScreen::Main => {
-                    // TODO: I don't like this options index
-                    if app.interface == "" {
+                    if app.interface.is_empty() {
                         continue;
                     }
                     if let Ok(metrics) = sniffer::radio_metrics(&app.analyzer_code, &app.interface)
@@ -258,7 +255,6 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                             metrics.0.to_string(),
                             metrics.1.to_string(),
                             metrics.2.unwrap_or(0).to_string(),
-                            // metrics.2.unwrap_or("N/A".to_string()),
                             metrics.3.to_string(),
                             metrics.4,
                             match metrics.5 {
