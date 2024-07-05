@@ -170,7 +170,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         }
                         _ => {}
                     },
-                    CurrentScreen::Interface => match key.code {
+                    CurrentScreen::InterfaceView => match key.code {
                         KeyCode::Char('q') => {
                             app.current_screen = CurrentScreen::Home;
                         }
@@ -210,7 +210,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                             if app.options_idx == 0 {
                                 app.current_screen = CurrentScreen::NodeView(Mode::Normal);
                             } else if app.options_idx == 1 {
-                                app.current_screen = CurrentScreen::Interface;
+                                app.current_screen = CurrentScreen::InterfaceView;
                             } else {
                                 app.current_screen = CurrentScreen::Main;
                             }
@@ -221,7 +221,7 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         KeyCode::Char('q') => {
                             return Ok(true);
                         }
-                        _ => app.current_screen = CurrentScreen::Main,
+                        _ => app.current_screen = CurrentScreen::Home,
                     },
                 }
             }
@@ -247,8 +247,11 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         }
                     }
                 }
-                CurrentScreen::Interface => {
+                CurrentScreen::Main => {
                     // TODO: I don't like this options index
+                    if app.interface == "" {
+                        continue;
+                    }
                     if let Ok(metrics) = sniffer::radio_metrics(&app.analyzer_code, &app.interface)
                     {
                         app.metrics = vec![
