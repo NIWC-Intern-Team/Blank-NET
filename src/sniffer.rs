@@ -64,10 +64,6 @@ pub fn ping(ip: Ipv4Addr) -> bool {
     false
 }
 
-pub fn ping_connection(nodes: Vec<Ipv4Addr>) -> Vec<bool> {
-    nodes.iter().map(|ip| ping(*ip)).collect()
-}
-
 pub fn radio_metrics(
     code: &str,
     interface: &String,

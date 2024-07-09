@@ -1,14 +1,12 @@
-use crate::app::*;
+use crate::{app::*, helpview};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{Color, Style, Stylize},
-    symbols::border,
     text::{Line, Span, Text},
     widgets::{Block, Borders, Paragraph},
     Frame,
 };
 
-const SELECTED_STYLE: Style = Style::new().bg(Color::White).fg(Color::Black);
 
 fn metric_block_ui(frame: &mut Frame, grid: Vec<Vec<Rect>>, app: &App) {
     let block_style = Style::default().fg(Color::Green);
@@ -182,6 +180,9 @@ pub fn ui(f: &mut Frame, app: &mut App) {
             1 => metric_ui(f, chunks.to_vec(), app),
             _ => {}
         },
+        CurrentScreen::Help => {
+            helpview::render(f, vec![chunks.to_vec()[1]], app);
+        }
         CurrentScreen::InterfaceView => {
             let new_if_list = app.interfaces.clone();
             select_ui(
@@ -228,6 +229,10 @@ pub fn ui(f: &mut Frame, app: &mut App) {
                 Style::default().fg(Color::LightYellow),
             ),
         ]),
+        CurrentScreen::Help => current_navigation_text.append(&mut vec![Span::styled(
+            "[up / down - scroll]",
+            Style::default().fg(Color::LightYellow),
+        )]),
         _ => {}
     };
 
