@@ -7,7 +7,6 @@ use ratatui::{
     Frame,
 };
 
-
 fn metric_block_ui(frame: &mut Frame, grid: Vec<Vec<Rect>>, app: &App) {
     let block_style = Style::default().fg(Color::Green);
 
@@ -84,7 +83,7 @@ fn metric_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &App) {
 fn select_ui(
     frame: &mut Frame,
     constraint: Vec<Rect>,
-    app: &App,
+    _app: &App,
     options: Vec<String>,
     options_idx: u32,
     have_border: bool,
@@ -136,7 +135,9 @@ fn home_ui(frame: &mut Frame, constraints: Vec<Rect>, app: &App) {
 }
 
 fn connection_ui(frame: &mut Frame, constraint: Vec<Rect>, app: &mut App) {
-    if app.current_screen == CurrentScreen::NodeView(Mode::Editing) {
+    if app.current_screen == CurrentScreen::NodeView(Mode::Edit)
+        || app.current_screen == CurrentScreen::NodeView(Mode::Push)
+    {
         let chunks = Layout::default()
             .direction(Direction::Vertical)
             .constraints(vec![Constraint::Fill(1), Constraint::Length(5)])
@@ -218,17 +219,31 @@ pub fn ui(f: &mut Frame, app: &mut App) {
     };
 
     // TODO: match for other screen types
-    match app.current_screen {
-        CurrentScreen::NodeView(_) => current_navigation_text.append(&mut vec![
-            Span::styled(
-                "[p - start ping test]  ",
+    match &app.current_screen {
+        CurrentScreen::NodeView(mode) => match mode {
+            Mode::Delete => current_navigation_text.append(&mut vec![Span::styled(
+                "[y / n - are you sure you want to delete this node?]  ",
                 Style::default().fg(Color::LightYellow),
-            ),
-            Span::styled(
-                "[enter - to edit node]  ",
-                Style::default().fg(Color::LightYellow),
-            ),
-        ]),
+            )]),
+            _ => current_navigation_text.append(&mut vec![
+                Span::styled(
+                    "[p - start ping test]  ",
+                    Style::default().fg(Color::LightYellow),
+                ),
+                Span::styled(
+                    "[enter - to edit node]  ",
+                    Style::default().fg(Color::LightYellow),
+                ),
+                Span::styled(
+                    "[d - delete selected node] ",
+                    Style::default().fg(Color::LightYellow),
+                ),
+                Span::styled(
+                    "[c - create a node]  ",
+                    Style::default().fg(Color::LightYellow),
+                ),
+            ]),
+        },
         CurrentScreen::Help => current_navigation_text.append(&mut vec![Span::styled(
             "[up / down - scroll]",
             Style::default().fg(Color::LightYellow),
