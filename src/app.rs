@@ -7,7 +7,9 @@ use crate::{sniffer::*, NodeTable};
 #[derive(PartialEq)]
 pub enum Mode {
     Normal,
-    Editing,
+    Edit,
+    Push,
+    Delete,
 }
 
 #[derive(PartialEq)]
@@ -28,22 +30,22 @@ pub enum PingStatus {
 
 #[derive(Debug)]
 pub struct IpConnection {
-    pub ip: String,
-    pub conn_status: String,
+    pub _ip: String,
+    pub _conn_status: String,
 }
 
 impl IpConnection {
     fn new(ip: &str, conn_status: &str) -> Self {
         Self {
-            ip: ip.to_string(),
-            conn_status: conn_status.to_string(),
+            _ip: ip.to_string(),
+            _conn_status: conn_status.to_string(),
         }
     }
 }
 
 pub struct IpList {
-    pub items: Vec<IpConnection>,
-    pub state: ListState,
+    pub _items: Vec<IpConnection>,
+    pub _state: ListState,
 }
 
 #[derive(PartialEq)]
@@ -73,12 +75,12 @@ pub struct App {
 
 impl FromIterator<(&'static str, &'static str)> for IpList {
     fn from_iter<T: IntoIterator<Item = (&'static str, &'static str)>>(iter: T) -> Self {
-        let items = iter
+        let _items = iter
             .into_iter()
             .map(|(ip, conn_status)| IpConnection::new(ip, conn_status))
             .collect();
-        let state = ListState::default();
-        Self { items, state }
+        let _state = ListState::default();
+        Self { _items, _state }
     }
 }
 

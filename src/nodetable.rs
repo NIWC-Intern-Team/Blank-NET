@@ -3,7 +3,7 @@ use ratatui::{prelude::*, widgets::*};
 use crate::scrollview;
 
 const HEADER_STYLE: Style = Style::new().fg(Color::Green);
-const SELECTED_STYLE: Style = Style::new().fg(Color::White).bg(Color::Green); // TODO: Pick nice select style
+// const SELECTED_STYLE: Style  Style::new().fg(Color::White).bg(Color::Green); // TODO: Pick nice select style
 const DATA_STYLE: Style = Style::new().fg(Color::White);
 
 const ITEM_HEIGHT: usize = 2;
@@ -111,10 +111,29 @@ impl NodeTable {
         self.nodes[self.state.selected().unwrap()].ip = ip;
     }
 
+    pub fn create_ip(&mut self, ip: String) {
+        self.nodes.push(Node {
+            ip,
+            conn_status: "_".into(),
+        });
+        self.scroll_state = self
+            .scroll_state
+            .content_length((self.nodes.len() - 1) * ITEM_HEIGHT);
+    }
+
+    pub fn delete_ip(&mut self, idx: u32) {
+        if idx < self.nodes.len() as u32 {
+            self.nodes.remove(idx as usize);
+        }
+    }
+
     pub fn get_selected_ip(&mut self) -> String {
         self.nodes[self.state.selected().unwrap()].ip.clone()
     }
 
+    pub fn get_selected_idx(&self) -> usize {
+        self.state.selected().unwrap()
+    }
     pub fn update_conn_status(&mut self, idx: usize, status: String) {
         self.nodes[idx].conn_status = status;
     }

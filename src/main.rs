@@ -105,29 +105,46 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                     continue;
                 }
                 match app.current_screen {
-                    CurrentScreen::NodeView(Mode::Editing) => match key.code {
-                        KeyCode::Enter => {
-                            if app.ip_input.parse::<Ipv4Addr>().is_ok() {
-                                app.node_table.update_ip(app.ip_input.clone());
-                                save_config(app);
-                                app.ip_input_status = IpInputStatus::Normal;
-                                app.current_screen = CurrentScreen::NodeView(Mode::Normal)
-                            } else if app.ip_input.is_empty() {
-                                app.ip_input_status = IpInputStatus::Normal;
-                                app.current_screen = CurrentScreen::NodeView(Mode::Normal)
-                            } else {
-                                app.ip_input_status = IpInputStatus::Error;
-                            }
+                    CurrentScreen::NodeView(Mode::Delete) => match key.code {
+                        KeyCode::Char('y') => {
+                            app.node_table
+                                .delete_ip(app.node_table.get_selected_idx() as u32);
+                            app.current_screen = CurrentScreen::NodeView(Mode::Normal);
                         }
-
-                        KeyCode::Backspace => {
-                            app.ip_input.pop();
-                        }
-                        KeyCode::Char(val) => {
-                            app.ip_input.push(val);
+                        KeyCode::Char('n') => {
+                            app.current_screen = CurrentScreen::NodeView(Mode::Normal)
                         }
                         _ => {}
                     },
+                    CurrentScreen::NodeView(Mode::Edit) | CurrentScreen::NodeView(Mode::Push) => {
+                        match key.code {
+                            KeyCode::Enter => {
+                                if app.ip_input.parse::<Ipv4Addr>().is_ok() {
+                                    if app.current_screen == CurrentScreen::NodeView(Mode::Push) {
+                                        app.node_table.create_ip(app.ip_input.clone());
+                                    } else {
+                                        app.node_table.update_ip(app.ip_input.clone());
+                                    }
+                                    save_config(app);
+                                    app.ip_input_status = IpInputStatus::Normal;
+                                    app.current_screen = CurrentScreen::NodeView(Mode::Normal)
+                                } else if app.ip_input.is_empty() {
+                                    app.ip_input_status = IpInputStatus::Normal;
+                                    app.current_screen = CurrentScreen::NodeView(Mode::Normal)
+                                } else {
+                                    app.ip_input_status = IpInputStatus::Error;
+                                }
+                            }
+
+                            KeyCode::Backspace => {
+                                app.ip_input.pop();
+                            }
+                            KeyCode::Char(val) => {
+                                app.ip_input.push(val);
+                            }
+                            _ => {}
+                        }
+                    }
                     CurrentScreen::NodeView(_) => match key.code {
                         KeyCode::Char('q') => {
                             app.current_screen = CurrentScreen::Home;
@@ -147,14 +164,21 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                                 app.node_table.previous();
                             }
                         }
+                        //TODO: rename to create instead of push
+                        KeyCode::Char('c') => {
+                            app.current_screen = CurrentScreen::NodeView(Mode::Push);
+                        }
+                        KeyCode::Char('d') => {
+                            app.current_screen = CurrentScreen::NodeView(Mode::Delete);
+                        }
                         KeyCode::Enter => {
-                            app.current_screen =
-                                if app.current_screen == CurrentScreen::NodeView(Mode::Editing) {
-                                    CurrentScreen::NodeView(Mode::Normal)
-                                } else {
-                                    app.ip_input = app.node_table.get_selected_ip();
-                                    CurrentScreen::NodeView(Mode::Editing)
-                                }
+                            // app.current_screen =
+                            //     if app.current_screen == CurrentScreen::NodeView(Mode::Edit) {
+                            //         CurrentScreen::NodeView(Mode::Normal)
+                            //     } else {
+                            app.ip_input = app.node_table.get_selected_ip();
+                            app.current_screen = CurrentScreen::NodeView(Mode::Edit)
+                            // }
                         }
                         _ => {}
                     },
