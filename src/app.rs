@@ -10,11 +10,11 @@ pub enum Mode {
     Editing,
 }
 
-
 #[derive(PartialEq)]
 pub enum CurrentScreen {
     InterfaceView,
     NodeView(Mode),
+    Help,
     Home,
     Main,
     Exiting,
@@ -66,6 +66,9 @@ pub struct App {
     pub ip_input_status: IpInputStatus,
     pub ip_input: String,
     pub filepath: PathBuf,
+
+    // Help
+    pub help_scroll: u16,
 }
 
 impl FromIterator<(&'static str, &'static str)> for IpList {
@@ -89,8 +92,8 @@ impl App {
             if_options_idx: 0,
             options: [
                 "Connection test".into(),
-                "GUSV network metrics".into(),
-                "Something else".into(),
+                "Network monitor".into(),
+                "Help".into(),
             ],
             node_table: NodeTable::default(),
             interfaces: list_interfaces(),
@@ -99,6 +102,7 @@ impl App {
             ip_input: String::from(""),
             ip_input_status: IpInputStatus::Normal,
             filepath: PathBuf::new(),
+            help_scroll: 0,
         }
     }
 }

@@ -14,6 +14,7 @@ use std::net::Ipv4Addr;
 use std::path::PathBuf;
 
 mod app;
+mod helpview;
 mod nodetable;
 mod scrollview;
 mod sniffer;
@@ -157,17 +158,39 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                         }
                         _ => {}
                     },
+                    CurrentScreen::Help => match key.code {
+                        KeyCode::Char('q') => {
+                            app.current_screen = CurrentScreen::Home;
+                            app.ping_status = PingStatus::Halt;
+                            app.metrics = (0..6).map(|_| String::new()).collect();
+                        }
+                        KeyCode::Down => {
+                            app.help_scroll = if app.help_scroll != 20 {
+                                app.help_scroll + 1
+                            } else {
+                                20
+                            };
+                        }
+                        KeyCode::Up => {
+                            app.help_scroll = if app.help_scroll != 0 {
+                                app.help_scroll - 1
+                            } else {
+                                0
+                            };
+                        }
+                        _ => {}
+                    },
                     CurrentScreen::Main => match key.code {
                         KeyCode::Char('q') => {
                             app.current_screen = CurrentScreen::Home;
                             app.ping_status = PingStatus::Halt;
                             app.metrics = (0..6).map(|_| String::new()).collect();
                         }
-                        KeyCode::Enter => {
-                            if app.options_idx == 0 {
-                                app.ping_status = PingStatus::Running(0);
-                            }
-                        }
+                        // KeyCode::Enter => {
+                        //     if app.options_idx == 0 {
+                        //         app.ping_status = PingStatus::Running(0);
+                        //     }
+                        // }
                         _ => {}
                     },
                     CurrentScreen::InterfaceView => match key.code {
@@ -211,6 +234,8 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                                 app.current_screen = CurrentScreen::NodeView(Mode::Normal);
                             } else if app.options_idx == 1 {
                                 app.current_screen = CurrentScreen::InterfaceView;
+                            } else if app.options_idx == 2 {
+                                app.current_screen = CurrentScreen::Help;
                             } else {
                                 app.current_screen = CurrentScreen::Main;
                             }
