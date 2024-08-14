@@ -19,6 +19,7 @@ mod nodetable;
 mod scrollview;
 mod sniffer;
 mod ui;
+
 use crate::{app::*, nodetable::*, ui::*};
 
 use clap::Parser;
