@@ -1,6 +1,6 @@
-# GUSV-NET
+# BLANK-NET
 
-A CLI tool for the GUSV to display and record network metrics. GUSV-NET assists GUSV test operators with features that allow analysis of network metrics and control of network configuration.
+A CLI tool for the BLANK to display and record network metrics. BLANK-NET assists BLANK test operators with features that allow analysis of network metrics and control of network configuration.
 
 ### Dependencies
 This program required dependencies are listed below:
@@ -31,5 +31,6 @@ run `sudo ./target/debug/gusvnet` or `sudo ./target/release/gusvnet`
 
 ### TODOS:
 - [ ] Show consistent round-trip time alongside connection status if connected
+- [ ] Improve security of the application
 - [ ] Introduce unit tests, refer to Ratatui demos
 - [ ] Clean up overall UI
