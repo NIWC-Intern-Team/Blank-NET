@@ -8,13 +8,13 @@ use ratatui::{
 use crate::App;
 
 const HELPTEXT: &'static str = "
-    GUSVNET is commandline tool for the GUSV to perform multi-pings and display network metrics.
+    blanknet is commandline tool for the GUSV to perform multi-pings and display network metrics.
     There are two main features:
 
     1. Connection test:
 
         Performs a ping test for a list of IP addresses (nodes). This option is fully editable
-        either through GUSVNET or in JSON array format. To edit the node simply press enter on
+        either through blanknet or in JSON array format. To edit the node simply press enter on
         the selected target node. You can then type a new IP address
 
     2. Network monitor:

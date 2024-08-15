@@ -27,7 +27,7 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    #[arg(short, long, default_value = "./gusvnet.yaml")]
+    #[arg(short, long, default_value = "./blanknet.yaml")]
     config_file: PathBuf,
 }
 

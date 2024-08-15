@@ -18,11 +18,11 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
   
 > [!NOTE]
-> In addition the binary has to be built from source with `cargo build` or `cargo build --release` The binaries will be stores in the respective paths: `./target/debug/gusvnet`, `./target/release/gusvnet`
+> In addition the binary has to be built from source with `cargo build` or `cargo build --release` The binaries will be stores in the respective paths: `./target/debug/blanknet`, `./target/release/blanknet`
   
 ### Usage
 
-run `sudo ./target/debug/gusvnet` or `sudo ./target/release/gusvnet`
+run `sudo ./target/debug/blanknet` or `sudo ./target/release/blanknet`
 ### Features
 - Verify connection of multiple IP addresses using ping
 - IP address Configuration
